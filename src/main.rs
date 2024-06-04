@@ -2,6 +2,8 @@
 // https://github.com/kolapapa/surge-ping/blob/main/examples/multi_ping.rs
 // https://tokio.rs/tokio/tutorial/channels
 
+mod pinged;
+
 const TIMEOUT: u64 = 1;             // Délai d'attente en secondes avant de considérer un ping comme non répondu
 
 use std::net::IpAddr;
@@ -11,6 +13,7 @@ use futures::future::join_all;
 use rand::random;
 use surge_ping::{Client, Config, IcmpPacket, PingIdentifier, PingSequence};
 use tokio::sync::mpsc;
+use crate::pinged::get_ping_ips;
 
 // Définition d'un message à passer dans le channel inter-tâches
 enum Command {
@@ -22,18 +25,9 @@ enum Command {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Tableau des adresses IPv4 à pinger
-    let ips = [
-        "192.168.0.7",
-        "192.168.0.6",
-        "192.168.0.13",
-        "192.168.0.19",
-        "10.5.0.1",
-        "10.5.0.2",
-        "10.5.0.3",
-        "10.5.0.4",
-        "8.8.8.8"
-    ];
+    // Récupération de la Hashmap des adresses IPv4 à pinger
+    let mut ips = get_ping_ips("adresses.txt");
+    let nb = &ips.len();
     // Création du channel inter-tâches de capacité 32
     // tx est le canal d'envoi, rx celui de réception
     let (tx, mut rx) = mpsc::channel(32);
@@ -44,8 +38,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Liste de ping (émetteur du channel)
     // On crée une tâche de ping par adresse IPv4 du tableau valide
-    for ip in &ips {
-        // analyse de la string IP du tableau des IP
+    for (ip, _ts) in &ips {
+        // analyse de la string IP clé de la HashMap
         match ip.parse() {
             // si l'adresse est une IPv4 valide
             Ok(IpAddr::V4(addr)) => {
@@ -74,27 +68,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // On crée une tâche de log, elle va recevoir en boucle les messages des tâches de ping via le channel
     // et gérer l'écriture dans le fichier de log
-    let logger = tokio::spawn(async move {
+    let logger = tokio::spawn(async move  {
+        let mut cpt = 0;  // compteur de pings répondus
         // le récepteur sera automatiquement fermé quand tous les émetteurs auront été drop()
         if !rx.is_closed() {
             while let Some(cmd) = rx.recv().await {
                 match cmd {
-                    Command::Ping {addr, timestamp} => { log(addr, timestamp).await; }
+                    Command::Ping {addr, timestamp} => {
+                        cpt = cpt + 1;
+                        ips.insert(addr.clone(), timestamp.clone()); }
                 }
             }
         }
         drop(rx);
-        println!("Liste d'IP entièrement pingée");
+        return cpt;
     });
 
     // Démarrage des tâches :
     let start = Utc::now();
     println!("Pinger démarré à {:?}", start);
-    logger.await.unwrap();      // on lance la tâche logger
+    let nb_pinge = logger.await.unwrap();      // on lance la tâche logger
     join_all(tasks).await;      // on rassemble toutes les tâches de ping pour le scheduler et on les démarre
     let now = Utc::now();
     let elapsed = now - start;
-    println!("Pinger terminé en {:?} secondes", elapsed.num_seconds());
+    println!("Pinger terminé en {} secondes. {} adresses ont répondu sur {} interrogées", elapsed.num_seconds(), nb_pinge, nb);
     Ok(())                      // on renvoie un Result Ok vide
 }
 
@@ -106,9 +103,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     pinger.timeout(Duration::from_secs(TIMEOUT));
     match pinger.ping(PingSequence(0), &payload).await {
         Ok((IcmpPacket::V4(packet), _duration)) => {
-            let timestamp = "now".to_string();
-            let addr = packet.get_source().to_string();
-            let command = Command::Ping{addr, timestamp};
+            let timestamp = Utc::now().timestamp().to_string();     // on récupère le timestamp au moment de la réponse
+            let addr = packet.get_source().to_string();             // et l'adresse IP du paquet de réponse
+            let command = Command::Ping{addr, timestamp};                 // On renvoie un Enum Command::Ping dans un Ok()
             Ok(command)
         },
         Ok((IcmpPacket::V6(_packet), _dur)) => {
@@ -120,8 +117,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Err(())
         },
     }
-}
-
-async fn log(addr: String, timestamp: String) {
-    println!("ip={}, timestamp={}", addr, timestamp);
 }
