@@ -2,10 +2,13 @@
 // https://github.com/kolapapa/surge-ping/blob/main/examples/multi_ping.rs
 // https://tokio.rs/tokio/tutorial/channels
 
-mod pinged;
 
+const IP_FILENAME: &str = "adresses.txt"; //nom du fichier des adresses à pinger
+const LOG_FILENAME: &str = "ping.log";   // nom du fichier de log des pings
+const SEP: &str = ",";                  // caractère séparateur dans le fichier de log
 const TIMEOUT: u64 = 1;             // Délai d'attente en secondes avant de considérer un ping comme non répondu
-
+mod pinged;
+use std::process;
 use std::net::IpAddr;
 use std::time::Duration;
 use chrono::Utc;
@@ -13,9 +16,9 @@ use futures::future::join_all;
 use rand::random;
 use surge_ping::{Client, Config, IcmpPacket, PingIdentifier, PingSequence};
 use tokio::sync::mpsc;
-use crate::pinged::get_ping_ips;
+use crate::pinged::{get_ping_ips, update_data_from_logfile, update_filelog};
 
-// Définition d'un message à passer dans le channel inter-tâches
+/// Définition d'un message à passer dans le channel inter-tâches
 enum Command {
     Ping {
         addr: String,               // IP de l'hôte pingé
@@ -26,8 +29,15 @@ enum Command {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Récupération de la Hashmap des adresses IPv4 à pinger
-    let mut ips = get_ping_ips("adresses.txt");
-    let nb = &ips.len();
+    let mut ips = get_ping_ips(IP_FILENAME);
+    let nb = ips.len();
+    if nb == 0 {
+        println!("fichier des adresses à pinger {IP_FILENAME} vide.");
+        process::exit(0x0100);
+    }
+    // Récupération éventuellement des logs précédents depuis le fichier et mise à jour de la HashMap
+    ips = update_data_from_logfile(LOG_FILENAME, SEP, ips);
+
     // Création du channel inter-tâches de capacité 32
     // tx est le canal d'envoi, rx celui de réception
     let (tx, mut rx) = mpsc::channel(32);
@@ -81,22 +91,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         drop(rx);
-        return cpt;
+        return (cpt, ips);
     });
 
     // Démarrage des tâches :
     let start = Utc::now();
     println!("Pinger démarré à {:?}", start);
-    let nb_pinge = logger.await.unwrap();      // on lance la tâche logger
+    let (nb_pinge, pings) = logger.await.unwrap();      // on lance la tâche logger
     join_all(tasks).await;      // on rassemble toutes les tâches de ping pour le scheduler et on les démarre
     let now = Utc::now();
     let elapsed = now - start;
+    update_filelog(LOG_FILENAME, SEP, pings);
     println!("Pinger terminé en {} secondes. {} adresses ont répondu sur {} interrogées", elapsed.num_seconds(), nb_pinge, nb);
     Ok(())                      // on renvoie un Result Ok vide
 }
 
-// fonction ping : consomme une instance de Client et une IpAddr
-// Renvoie un Result : un Command::Ping si Ok, une Err() sinon
+/// fonction ping : consomme une instance de Client et une IpAddr
+/// Renvoie un Result : un Command::Ping si Ok, une Err() sinon
  async fn ping(client: Client, addr: IpAddr) -> Result<Command, ()> {
     let payload = [0; 56];
     let mut pinger = client.pinger(addr, PingIdentifier(random())).await;
