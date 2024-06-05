@@ -8,7 +8,7 @@ Les résultats des pings sont inscrits dans un fichier de log qui préseve les a
 Le fichier de log contient une liste de paires :  
 ```adresse_ip_pinguée, timestamp_utc_de_la_dernière_réponse```  
 
-Les paires sont triées dans le fichier de log dans le même ordre que les adresses IP transmises dans le fichier des adresses à tester.  
+Les paires sont triées dans le fichier de log dans le même ordre que les adresses IP transmises dans le fichier des adresses à tester, pour simplifier la lecture ou d'éventuels traitements ensuite.  
 
 L'outil peut être lancé via la crontab à intervalles réguliers. Il met une seconde (avec un timeout fixé à 1 s) à tester plusieurs milliers de machines.  
 
