@@ -17,3 +17,5 @@ Pour l'exécuter, placer le binaire `pinger` dans un répertoire contenant son f
 
 
 Le code est commenté en français pour faciliter la maintenance ou l'apprentissage de Rust.  
+
+Binaire compilé pour linux à télécharger ici : https://jerome.bousquie.fr/soft/pinger/pinger.zip
