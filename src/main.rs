@@ -3,7 +3,6 @@
 // https://tokio.rs/tokio/tutorial/channels
 
 const SETTINGS_FILENAME: &str = "./pinger.conf";
-              // Délai d'attente en secondes avant de considérer un ping comme non répondu
 mod pinged;
 mod settings;
 
