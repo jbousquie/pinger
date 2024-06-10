@@ -55,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // On crée une tâche de ping par adresse IPv4 du tableau valide
     for ip in &vec_ips {
         // analyse de la string IP clé de la HashMap
-        match ip.parse() {
+        match ip.parse::<core::net::IpAddr>() {
             // si l'adresse est une IPv4 valide
             Ok(IpAddr::V4(addr)) => {
                 // on stocke une tâche dans le tableau des tâches à partir d'un clone du client
@@ -74,8 +74,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(IpAddr::V6(addr)) => {
                 println!("ping IPv6 non activé {}", addr); // message d'information
             },
-            // Si l'adresse n'est pas valide -> message d'information
-            Err(e) => println!("{} erreur d\'analyse de l\'adresse IP : {}", ip, e),
+            // Si l'adresse n'est pas valide et n'est pas un commentaire -> message d'information
+            Err(e) => {
+                if !(ip.contains("//") || ip.contains("#")) {
+                    println!("{} erreur d\'analyse de l\'adresse IP : {}", ip, e);
+                }
+            }
         }
     }
     drop(tx); // on supprime l'émetteur qui a servi de base pour les clone
@@ -121,7 +125,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok((IcmpPacket::V4(packet), _duration)) => {
             let timestamp = Utc::now().timestamp().to_string();     // on récupère le timestamp au moment de la réponse
             let addr = packet.get_source().to_string();             // et l'adresse IP du paquet de réponse
-            let command = Command::Ping{addr, timestamp};                 // On renvoie un Enum Command::Ping dans un Ok()
+            let command = Command::Ping{addr, timestamp};           // On renvoie un Enum Command::Ping dans un Ok()
             Ok(command)
         },
         Ok((IcmpPacket::V6(_packet), _dur)) => {

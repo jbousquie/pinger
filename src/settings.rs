@@ -8,12 +8,13 @@ pub mod settings {
     const DEF_LOG_FILENAME: &str = "pinger.log"; // nom du fichier de log des pings
     const DEF_SEP: &str = ",";                   // caractère séparateur dans le fichier de log
     const DEF_TIMEOUT: u64 = 1;                  // time du ping
-
+    const DEF_TEMPLATE_FILE: &str = "adresses_template.txt";  // nom du fichier template à analyser pour générer le fichier d'adresses à pinger
     pub struct Settings {
         pub addr_filename: String,              // nom du fichier des adresses IP à pinguer
         pub log_filename: String,               // nom du fichier de log des résultats du ping
         pub logfile_sep: String,                // caractère de séparation ip/timestamp dans le fichier de log
         pub ping_timeout: u64,                  // timeout en seconde(s) avant de considérer un ping comme non répondu
+        pub template_file: String,              // nom du fichier template pour générer le fichier des adresses IP à pinguer
     }
 
     /// Renvoie une string à partir de la valeur d'un param du fichier toml
@@ -21,13 +22,14 @@ pub mod settings {
         setting.as_str().unwrap().to_string()
     }
 
-    // Lit le fichier de configuration et renvoie un objet Settings
+    /// Lit le fichier de configuration et renvoie un objet Settings
     pub fn load_settings(settings_filename: &str) -> Settings {
         let default_settings = Settings {
             addr_filename: DEF_IP_FILENAME.to_string(),
             log_filename: DEF_LOG_FILENAME.to_string(),
             logfile_sep: DEF_SEP.to_string(),
-            ping_timeout: DEF_TIMEOUT
+            ping_timeout: DEF_TIMEOUT,
+            template_file: DEF_TEMPLATE_FILE.to_string(),
         };
         if let Ok(settings_str) = fs::read_to_string(settings_filename) {
             if let Ok(config) = &settings_str.parse::<Table>() {
@@ -35,6 +37,7 @@ pub mod settings {
                     addr_filename: string_from_settings(&config["addr_filename"]),
                     log_filename: string_from_settings(&config["log_filename"]),
                     logfile_sep: string_from_settings(&config["logfile_sep"]),
+                    template_file: string_from_settings(&config["addr_template"]),
                     ping_timeout: config["ping_timeout"].as_integer().unwrap() as u64,
                 };
                 return settings;

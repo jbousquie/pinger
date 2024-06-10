@@ -13,49 +13,13 @@ pub fn get_ping_ips(vec_ips: &Vec<String>) -> HashMap<String, String> {
 }
 
 /// Lit le fichier d'adresses à pinger et renvoie un Vec<String>
+/// Ignore les lignes contenant des commentaires
 pub fn get_ips_from_file(ipfilename: &str) -> Vec<String> {
-    /*
-    // Génération de données dans le fichier IP
-    let mut data = "".to_string();
-    let prefixes = [
-        "192.168.0.",
-        "192.168.100.",
-        "10.5.0.",
-        "193.54.203.",
-        "193.49.48.",
-        "10.46.0.",
-        "10.2.3.",
-        "10.2.4.",
-        "10.2.5.",
-        "10.2.6.",
-        "10.2.7.",
-        "10.2.8.",
-        "10.2.9.",
-        "10.2.10.",
-        "10.2.11.",
-        "10.2.12.",
-        "10.2.13.",
-        "10.2.14.",
-        "10.2.15.",
-        "8.8.8.",
-    ];
-    for j in 0..prefixes.len() {
-        let prefix = prefixes[j];
-        for i in 1..256 {
-            let ip = prefix.to_string() + i.to_string().as_str() + "\n";
-            data = data + ip.as_str();
-        }
-    }
-    fs::write(ipfilename, data.as_str()).unwrap();
-    */
-
-
-
     let mut ips = Vec::new();
     if let Ok(str_lines) = fs::read_to_string(ipfilename) {
         let lines: Vec<&str> = str_lines.split("\n").collect();
         for line in lines {
-            if line.len() > 0 {
+            if line.len() > 0 && !(line.contains("//") || line.contains("#")){
                 ips.push(line.to_string());
             }
         }

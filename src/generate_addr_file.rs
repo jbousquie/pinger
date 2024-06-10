@@ -1,8 +1,9 @@
 use std::{fs, process};
 
-const INPUT_FILE: &str = "a_generer.txt";
-const OUTPUT_FILE: &str = "adresses.txt";
+mod settings;
+use settings::settings::load_settings;
 
+const SETTINGS_FILENAME: &str = "./pinger.conf";
 struct IpList {
     bytes : Vec<Vec<String>>
 }
@@ -29,6 +30,7 @@ fn parse_input_file(filename: &str) -> String {
     }
 }
 
+/// Renvoie une string d'adresses générées
 fn generate_addrs(line: &str) -> String {
     let mut ip_list = IpList {
         bytes: Vec::new(),
@@ -61,39 +63,40 @@ fn generate_addrs(line: &str) -> String {
     ips
 }
 
-// renvoie les index start-end d'un octet contenant "*" ou "-" dans un Result
+/// Renvoie les index start-end d'un octet contenant "*" ou "-" dans un Result
 fn get_limits(mut octet: &str) -> Result<(i32, i32), ()>{
     if octet == "*" {
-        octet = "0-254";
+        octet = "0-255";
     }
     // soit l'octet courant contient "-"
     if octet.contains("-") {
         let mut start = 0;
-        let mut end = 254;
+        let mut end = 255;
         let start_end: Vec<&str> = octet.split("-").collect();
         if start_end.len() == 2 {
             let str_start = start_end[0];
             let str_end = start_end[1];
             if let Ok(st) = str_start.parse() {
-                start = st;
+                start = if st < 0 { 0 } else { st };
             } else {
                 return Err(());
             }
             if let Ok(ed) = str_end.parse() {
-                end = ed;
+                end = if ed > 255 { 255 } else { ed };
             } else {
                 return Err(());
             }
         }
-        if (start <= end) {
+        if start <= end {
             return Ok((start, end))
         }
     }
     Err(())
 }
 
-// Cette fonction concatène dans une string
-// les combinaisons possibles d'IP à partir du tableau de stockage
+/// Cette fonction concatène dans une string
+/// les combinaisons possibles d'IP à partir du tableau de stockage
+/// Aurait pu être récursive, mais plus simple à lire/maintenir en boucles imbriquées
 fn populate_line(ip_list: &IpList) -> String {
     let mut ips = "".to_string();
     let bytes = &ip_list.bytes;
@@ -113,11 +116,21 @@ fn populate_line(ip_list: &IpList) -> String {
     }
     ips
 }
+/// Affiche le message d'erreur de la ligne ignorée
 fn print_line_error(line: &str) {
     println!("Erreur sur adresse à générer à partir de la ligne {line}. Ligne ignorée.");
 }
 
 fn main() {
-    let generated_addrs = parse_input_file(INPUT_FILE);
-    println!("{generated_addrs}");
+    let settings = load_settings(SETTINGS_FILENAME);
+    let ip_filename = &settings.addr_filename;
+    let template_file = &settings.template_file;
+    let generated_addrs = parse_input_file(template_file);
+    // écriture des résultats de ping dans le fichier de log
+    if let Ok(_file) = fs::write(ip_filename, &generated_addrs) {
+        println!("Fichier des adresses généré : {}", ip_filename);
+    }
+    else {
+        println!("Erreur : impossible d'écrire dans le fichier des adresses : {}", ip_filename);
+    }
 }
