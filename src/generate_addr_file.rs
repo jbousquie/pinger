@@ -12,15 +12,16 @@ fn parse_input_file(filename: &str) -> String {
     if let Ok(input_file) = fs::read_to_string(filename) {
         let lines: Vec<&str> = input_file.split("\n").collect();
         for line in lines {
-            // si la ligne contient un caractère spécial "-" ou "*", on l'analyse
-            if line.contains("-") || line.contains("*") {
-                generated = generated + "\n" + generate_addrs(line).as_str();
+            if line.len() > 0 && !(line.contains("//") || line.contains("#")) {
+                // si la ligne contient un caractère spécial "-" ou "*", on l'analyse
+                if line.contains("-") || line.contains("*") {
+                    generated = generated + generate_addrs(line).as_str();
+                }
+                // sinon on la recopie directement dans la string générée
+                else {
+                    generated = generated + line + "\n";
+                }
             }
-            // sinon on la recopie directement dans la string générée
-            else {
-                generated = generated + line + "\n";
-            }
-
         }
         generated
     }

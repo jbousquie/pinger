@@ -1,4 +1,4 @@
 // réseau local
 192.168.100.*
-// DNS Google
+# DNS Google
 8.8.8.8
