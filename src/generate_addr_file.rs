@@ -35,6 +35,10 @@ fn generate_addrs(line: &str) -> String {
     };
     let blank = "".to_string();
     let octets: Vec<&str> = line.split(".").collect();
+    if octets.len() != 4 {
+        print_line_error(&line);
+        return blank;
+    }
     for i in 0..4 {
         let octet = octets[i];                      // octet courant de la ligne analysée
         let mut byte = Vec::new();            // tableau de stockage de l'octet courant
@@ -43,19 +47,17 @@ fn generate_addrs(line: &str) -> String {
             byte.push(cur_oct);
         }
         else if let Ok((start, end)) = get_limits(octet) {      // sinon on tente de générer la liste à des chars "*" ou "-"
-            for o in start..end + 1 {
+            for o in start..(end + 1) {
                 let cur_oct = o.to_string();
                 byte.push(cur_oct);
             }
         }
         else {                                                                     // si analyse impossible on ressort de la fonction
-            print_line_error(&line);
-            return blank;
+
         }
         ip_list.bytes.push(byte);
     }
     let ips = populate_line(&ip_list);
-    println!("{ips}");
     ips
 }
 
@@ -83,7 +85,9 @@ fn get_limits(mut octet: &str) -> Result<(i32, i32), ()>{
                 return Err(());
             }
         }
-        return Ok((start, end))
+        if (start <= end) {
+            return Ok((start, end))
+        }
     }
     Err(())
 }
@@ -115,4 +119,5 @@ fn print_line_error(line: &str) {
 
 fn main() {
     let generated_addrs = parse_input_file(INPUT_FILE);
+    println!("{generated_addrs}");
 }
