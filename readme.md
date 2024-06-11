@@ -30,7 +30,7 @@ Le fichier de log contient une liste de paires :
 
 Les paires sont triées dans le fichier de log dans le même ordre que les adresses IP transmises dans le fichier des adresses à tester, pour simplifier la lecture ou d'éventuels traitements ensuite.  
 
-L'outil peut être lancé via la crontab à intervalles réguliers. Il met une seconde (avec un timeout fixé à 1 s) à tester plusieurs milliers de machines.  
+L'outil peut être lancé via la crontab à intervalles réguliers. Il met quelques secondes à tester plusieurs milliers de machines.  
 
 Pour l'exécuter, placer le binaire `pinger` dans un répertoire contenant son fichier de configuration `pinger.conf`, puis lancer la commande 
 ```./pinger```
