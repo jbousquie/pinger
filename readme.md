@@ -35,6 +35,28 @@ L'outil peut être lancé via la crontab à intervalles réguliers. Il met une s
 Pour l'exécuter, placer le binaire `pinger` dans un répertoire contenant son fichier de configuration `pinger.conf`, puis lancer la commande 
 ```./pinger```
 
+Le fichier de configuration `pinger.conf` a le format suivant :
+```toml
+# Fichier de configuration de Pinger au format TOML
+# addr_filename = "/path/vers/fichier/adresses_à_pinguer"
+# log_filename = "/path/vers/fichier/log_des_pings"
+# logfile_sep = ","         # caractère de séparation ip/timestamp dans le fichier de log des pings
+# ping_timeout = 1500       # (entier) durée en millesecondes d'attente avant de considérer un ping comme non répondu
+# addr_template = "/path/vers/fichier/template_generation_adresses"
+# task_group_nb  = 64       # (entier) nombre de tâches lancées avant d'attendre un petit délai pour continuer pour limiter les risques de congestion
+# task_group_delay = 10     # (entier) nombre de millisecondes à attendre avant de lancer le groupe de tâches suivant
+
+addr_filename = "./adresses.txt"
+log_filename = "./pinger.log"
+logfile_sep = ","
+ping_timeout = 1750
+addr_template = "./adresses_template.txt"
+task_group_nb = 64
+task_group_delay = 10
+```
+Dans cet exemple, les pings sont lancés par groupes de 64 ip de destination et un délai de 10 ms est imposé entre chaque lancement d'un nouveau groupe pour limiter les risques de congestion sur l'interface.  
+Selon votre interface et votre réseau, des groupes de 32 à 512 tâches simultanées et des délais entre 4 et 20 ms peuvent être pertinents par exemple.  
+
 
 Le code est commenté en français pour faciliter la maintenance ou l'apprentissage de Rust.  
 
