@@ -32,8 +32,8 @@ pub mod settings {
             logfile_sep: DEF_SEP.to_string(),
             ping_timeout: DEF_TIMEOUT,
             template_file: DEF_TEMPLATE_FILE.to_string(),
-            task_group_nb: 64,
-            task_group_delay: 10,
+            task_group_nb: 24,
+            task_group_delay: 2,
         };
         if let Ok(settings_str) = fs::read_to_string(settings_filename) {
             if let Ok(config) = &settings_str.parse::<Table>() {
