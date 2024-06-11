@@ -13,8 +13,10 @@ pub mod settings {
         pub addr_filename: String,              // nom du fichier des adresses IP à pinguer
         pub log_filename: String,               // nom du fichier de log des résultats du ping
         pub logfile_sep: String,                // caractère de séparation ip/timestamp dans le fichier de log
-        pub ping_timeout: u64,                  // timeout en seconde(s) avant de considérer un ping comme non répondu
+        pub ping_timeout: u64,                  // timeout en millisecondes avant de considérer un ping comme non répondu
         pub template_file: String,              // nom du fichier template pour générer le fichier des adresses IP à pinguer
+        pub task_group_nb: i32,                 // nombre de tâches lancées ensemble avant d'attendre un petit délai
+        pub task_group_delay: u64,              // délai d'attente en millisecondes entre deux groupes de tâches
     }
 
     /// Renvoie une string à partir de la valeur d'un param du fichier toml
@@ -30,6 +32,8 @@ pub mod settings {
             logfile_sep: DEF_SEP.to_string(),
             ping_timeout: DEF_TIMEOUT,
             template_file: DEF_TEMPLATE_FILE.to_string(),
+            task_group_nb: 64,
+            task_group_delay: 10,
         };
         if let Ok(settings_str) = fs::read_to_string(settings_filename) {
             if let Ok(config) = &settings_str.parse::<Table>() {
@@ -39,6 +43,8 @@ pub mod settings {
                     logfile_sep: string_from_settings(&config["logfile_sep"]),
                     template_file: string_from_settings(&config["addr_template"]),
                     ping_timeout: config["ping_timeout"].as_integer().unwrap() as u64,
+                    task_group_nb: config["task_group_nb"].as_integer().unwrap() as i32,
+                    task_group_delay: config["task_group_delay"].as_integer().unwrap() as u64,
                 };
                 return settings;
             } else {
