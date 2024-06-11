@@ -43,16 +43,16 @@ Le fichier de configuration `pinger.conf` a le format suivant :
 # logfile_sep = ","         # caractère de séparation ip/timestamp dans le fichier de log des pings
 # ping_timeout = 1500       # (entier) durée en millesecondes d'attente avant de considérer un ping comme non répondu
 # addr_template = "/path/vers/fichier/template_generation_adresses"
-# task_group_nb  = 64       # (entier) nombre de tâches lancées avant d'attendre un petit délai pour continuer pour limiter les risques de congestion
-# task_group_delay = 10     # (entier) nombre de millisecondes à attendre avant de lancer le groupe de tâches suivant
+# task_group_nb  = 48       # (entier) nombre de tâches lancées avant d'attendre un petit délai pour continuer pour limiter les risques de congestion
+# task_group_delay = 5      # (entier) nombre de millisecondes à attendre avant de lancer le groupe de tâches suivant
 
 addr_filename = "./adresses.txt"
 log_filename = "./pinger.log"
 logfile_sep = ","
 ping_timeout = 1750
 addr_template = "./adresses_template.txt"
-task_group_nb = 64
-task_group_delay = 10
+task_group_nb = 24
+task_group_delay = 2
 ```
 Dans cet exemple, les pings sont lancés par groupes de 64 ip de destination et un délai de 10 ms est appliqué entre chaque lancement, pour limiter les risques de congestion sur l'interface.  
 Selon votre interface et votre réseau, des groupes de 16 à 48 tâches simultanées et des délais entre 1 et 6 ms peuvent être pertinents par exemple.  
