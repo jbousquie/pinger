@@ -54,7 +54,7 @@ addr_template = "./adresses_template.txt"
 task_group_nb = 64
 task_group_delay = 10
 ```
-Dans cet exemple, les pings sont lancés par groupes de 64 ip de destination et un délai de 10 ms est imposé entre chaque lancement d'un nouveau groupe pour limiter les risques de congestion sur l'interface.  
+Dans cet exemple, les pings sont lancés par groupes de 64 ip de destination et un délai de 10 ms est appliqué entre chaque lancement, pour limiter les risques de congestion sur l'interface.  
 Selon votre interface et votre réseau, des groupes de 32 à 512 tâches simultanées et des délais entre 4 et 20 ms peuvent être pertinents par exemple.  
 
 
