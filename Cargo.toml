@@ -19,3 +19,4 @@ tokio = {version = "1.38.0", features = ["rt", "time", "rt-multi-thread", "macro
 tokio-macros = "2.3.0"
 chrono = "0.4.38"
 toml = "0.8.14"
+cidr = "0.2.2"

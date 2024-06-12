@@ -1,4 +1,6 @@
 use std::{fs, process};
+use std::str::FromStr;
+use cidr::Ipv4Cidr;
 
 mod settings;
 use settings::settings::load_settings;
@@ -17,6 +19,10 @@ fn parse_input_file(filename: &str) -> String {
                 if line.contains("-") || line.contains("*") {
                     generated = generated + generate_addrs(line).as_str();
                 }
+                // si elle est au format CIDR
+                else if line.contains("/") {
+                    generated = generated + generate_cidr(line).as_str();
+                }
                 // sinon on la recopie directement dans la string générée
                 else {
                     generated = generated + line + "\n";
@@ -31,7 +37,25 @@ fn parse_input_file(filename: &str) -> String {
     }
 }
 
-/// Renvoie une string d'adresses générées
+/// Renvoie une string d'adresses générées à partir d'un format CIRD
+fn generate_cidr(line: &str) -> String {
+    let blank = "".to_string();
+    let res = Ipv4Cidr::from_str(line);
+    match res {
+        Err(_) => return blank,
+        Ok(subnet) => {
+            let mut addrs = "".to_string();
+            for ip in subnet.iter() {
+                let ip_st = ip.to_string();
+                let addr = ip_st.split("/").collect::<Vec<&str>>()[0];
+                addrs = addrs + addr + "\n";
+            }
+            return addrs;
+        }
+    }
+}
+
+/// Renvoie une string d'adresses générées à partir du format "*" ou "-"
 fn generate_addrs(line: &str) -> String {
     let mut ip_list = IpList {
         bytes: Vec::new(),
@@ -127,9 +151,10 @@ fn main() {
     let ip_filename = &settings.addr_filename;
     let template_file = &settings.template_file;
     let generated_addrs = parse_input_file(template_file);
+    let line_nb = generated_addrs.matches("\n").count();
     // écriture des résultats de ping dans le fichier de log
     if let Ok(_file) = fs::write(ip_filename, &generated_addrs) {
-        println!("Fichier des adresses généré : {}", ip_filename);
+        println!("Fichier des adresses généré ({} adresses) : {}", line_nb, ip_filename);
     }
     else {
         println!("Erreur : impossible d'écrire dans le fichier des adresses : {}", ip_filename);

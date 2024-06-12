@@ -6,6 +6,7 @@ Il ne nécessite pas que la commande `ping` soit disponible sur le système, ni 
 
 Le fichier d'adresses à pinger peut être généré par l'utilitaire `./pinger_generate`. Cet utilitaire lit le fichier template d'adresses (par défaut le fichier `adresses_template.txt` placé dans le mếme répertoire) et génére le fichier d'adresses à pinguer (par défaut `adresses.txt`).  
 Le format du fichier template est simple : chaque octet d'une adresse IPv4 peut être écrit sous la forme d'un entier directement, ou d'une plage d'entiers (ex : `2-10`), ou du caractère générique `*` signifiant toute la plage `0-255`.  
+Vous pouvez aussi utiliser le format CIDR (sans le mélanger au format précédent) : `193.54.203.128/25`
 Exemple :   
 ```txt
 // les commentaires de ligne sont autorisés dans ce fichier
@@ -17,6 +18,8 @@ Exemple :
 10.1.1-50.*
 # plage serveurs publics
 193.54.203.1-128
+# un sous-réseau
+193.54.203.128/25
 # DNS Google
 8.8.8.8
 ```
