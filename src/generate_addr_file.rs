@@ -80,7 +80,7 @@ fn generate_addrs(line: &str) -> String {
             }
         }
         else {                                                                     // si analyse impossible on ressort de la fonction
-
+            return blank;
         }
         ip_list.bytes.push(byte);
     }
