@@ -63,4 +63,5 @@ Selon votre interface et votre réseau, des groupes de 16 à 48 tâches simultan
 
 Le code est commenté en français pour faciliter la maintenance ou l'apprentissage de Rust.  
 
-Binaire compilé pour linux à télécharger ici : https://jerome.bousquie.fr/soft/pinger/linux/pinger.zip
+Exécutable compilé pour linux à télécharger ici : https://jerome.bousquie.fr/soft/pinger/linux/pinger-linux.zip  
+Exécutable compilé pour linux à télécharger ici : https://jerome.bousquie.fr/soft/pinger/windows/pinger-windows.zip
