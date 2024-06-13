@@ -12,7 +12,7 @@ struct IpList {
 fn parse_input_file(filename: &str) -> String {
     let mut generated = "".to_string();
     if let Ok(input_file) = fs::read_to_string(filename) {
-        let lines: Vec<&str> = input_file.split("\n").collect();
+        let lines: Vec<&str> = input_file.lines().collect();
         for line in lines {
             if line.len() > 0 && !(line.contains("//") || line.contains("#")) {
                 // si la ligne contient un caractère spécial "-" ou "*", on l'analyse

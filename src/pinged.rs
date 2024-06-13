@@ -17,7 +17,7 @@ pub fn get_ping_ips(vec_ips: &Vec<String>) -> HashMap<String, String> {
 pub fn get_ips_from_file(ipfilename: &str) -> Vec<String> {
     let mut ips = Vec::new();
     if let Ok(str_lines) = fs::read_to_string(ipfilename) {
-        let lines: Vec<&str> = str_lines.split("\n").collect();
+        let lines: Vec<&str> = str_lines.lines().collect();
         for line in lines {
             if line.len() > 0 && !(line.contains("//") || line.contains("#")){
                 ips.push(line.to_string());
